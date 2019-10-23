@@ -1,0 +1,26 @@
+syntax = "proto2";
+
+package hy.user;
+
+option java_package = "com.hy.user.pb";
+option java_multiple_files = true;
+
+message UserInfo {
+    optional string name = 1;
+    optional int32 age = 2;
+    optional string gender = 3;
+}
+
+message UserInfoRequest {
+    optional string name = 1;
+}
+
+message UserInfoResponse {
+    optional bool success = 1;
+    optional UserInfo user = 2;
+    optional string err_msg = 3;
+}
+
+service UserService {
+    rpc getUserByName(UserInfoRequest) returns (UserInfoResponse);
+}

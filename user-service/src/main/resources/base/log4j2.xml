@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration shutdownHook="disable" status="WARN">
+  <Properties>
+    <Property name="APP_NAME">user-service</Property>
+    <Property name="LOG_EXCEPTION_CONVERSION_WORD">%xEx</Property>
+    <Property name="LOG_LEVEL_PATTERN">%5p</Property>
+    <Property name="LOG_PATTERN">[%d{yyyy-MM-dd HH:mm:ss.SSS}][${LOG_LEVEL_PATTERN}][%t][%c] : %m%n${LOG_EXCEPTION_CONVERSION_WORD}
+    </Property>
+    <Property name="LOG_PATH">./logs</Property>
+  </Properties>
+
+  <DynamicThresholdFilter defaultThreshold="ERROR" key="logLevel" onMatch="ACCEPT" onMismatch="DENY">
+    <KeyValuePair key="TRACE" value="TRACE"/>
+    <KeyValuePair key="DEBUG" value="DEBUG"/>
+    <KeyValuePair key="INFO" value="INFO"/>
+    <KeyValuePair key="WARN" value="WARN"/>
+    <KeyValuePair key="ERROR" value="ERROR"/>
+    <KeyValuePair key="FATAL" value="FATAL"/>
+    <KeyValuePair key="OFF" value="OFF"/>
+  </DynamicThresholdFilter>
+
+  <Appenders>
+    <Async blocking="false" bufferSize="1048576" name="Async">
+      <AppenderRef ref="Console"/>
+    </Async>
+
+    <Console follow="true" name="Console" target="SYSTEM_OUT">
+      <PatternLayout charset="utf-8" pattern="${LOG_PATTERN}"/>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <Root level="INFO">
+      <AppenderRef ref="Async"/>
+    </Root>
+  </Loggers>
+</Configuration>

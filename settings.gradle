@@ -1,0 +1,4 @@
+rootProject.name = 'micro-service'
+include 'hy-run'
+include 'proto'
+include 'user-service'

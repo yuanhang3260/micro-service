@@ -1,0 +1,166 @@
+ext {
+    springBootVersion = "2.1.5.RELEASE"
+    fastjsonVersion = "1.2.60"
+    junitVersion = "4.12"
+    lombokVersion = "1.18.2"
+    log4jVersion = "2.11.1"
+    grpcVersion = "1.12.0"
+    protobufJavaVersion = "3.6.1"
+}
+
+buildscript {
+    ext {
+        springBootVersion = "2.1.5.RELEASE"
+        dependencyManagementPluginVersion = "0.6.1.RELEASE"
+    }
+
+    repositories {
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        maven { url "http://maven.aliyun.com/nexus/content/repositories/jcenter"}
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+        classpath("io.spring.gradle:dependency-management-plugin:$dependencyManagementPluginVersion")
+        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.6")
+    }
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "idea"
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    ext {
+        env = System.getProperty("env") == null ? "development" : System.getProperty("env")
+    }
+
+    configurations {
+        all*.exclude group: "ch.qos.logback"
+        all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
+        all*.exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+        all*.exclude group: "org.springframework.boot", module: "spring-boot-starter-actuator"
+        all*.exclude group: "org.springframework.boot", module: "spring-boot-actuator"
+    }
+
+    repositories {
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        maven { url "http://maven.aliyun.com/nexus/content/repositories/jcenter"}
+        mavenCentral()
+    }
+
+    sourceSets {
+        main {
+            java {
+                srcDirs = ["src/main/java"]
+            }
+            resources {
+                srcDirs = ["src/main/resources/base", "src/main/resources/$env"]
+            }
+        }
+        test {
+            resources {
+                srcDirs = ["src/test/resources/base", "src/test/resources/$env"]
+            }
+        }
+    }
+
+    dependencies {
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    }
+
+}
+
+project(":user-service") {
+    apply plugin: "application"
+    apply plugin: "org.springframework.boot"
+
+    mainClassName = "com.hy.user.UserServiceApplication"
+
+    dependencies {
+        compile project(":proto")
+
+        compile("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+        compile("com.alibaba:fastjson:$fastjsonVersion")
+
+        compile "org.apache.logging.log4j:log4j-core:$log4jVersion"
+        compile "org.apache.logging.log4j:log4j-api:$log4jVersion"
+        compile "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+
+        testCompile group: "junit", name: "junit", version: "4.12"
+    }
+}
+
+project(":hy-run") {
+    apply plugin: "application"
+
+    mainClassName = "com.hy.Main"
+
+    jar {
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    }
+
+    dependencies {
+        compile project(":proto")
+
+        compile("com.alibaba:fastjson:$fastjsonVersion")
+    }
+}
+
+project(":proto") {
+    apply plugin: "com.google.protobuf"
+
+    sourceSets {
+        main {
+            proto {
+                srcDirs = ["src/main/proto"]
+            }
+        }
+    }
+
+    protobuf {
+        generatedFilesBaseDir = "$projectDir/src/generated"
+
+        protoc {
+            artifact = "com.google.protobuf:protoc:2.5.0"
+        }
+
+        plugins {
+            grpc {
+                artifact = "io.grpc:protoc-gen-grpc-java:1.7.0"
+            }
+        }
+
+        generateProtoTasks {
+            all()*.plugins {
+                grpc {
+                }
+            }
+        }
+    }
+
+    clean {
+        delete protobuf.generatedFilesBaseDir
+    }
+
+    idea {
+        module {
+            sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
+            sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/grpc")
+        }
+    }
+
+    dependencies {
+        compile("com.google.protobuf:protobuf-java:$protobufJavaVersion")
+
+        compile("io.grpc:grpc-all:$grpcVersion") {
+            exclude group: "org.springframework.boot"
+            exclude group: "com.google.protobuf"
+            exclude group: "com.alibaba:fastjson"
+        }
+    }
+}
