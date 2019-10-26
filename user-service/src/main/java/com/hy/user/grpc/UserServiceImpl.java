@@ -1,5 +1,6 @@
-package com.hy.user.service;
+package com.hy.user.grpc;
 
+import com.hy.user.annotations.GrpcService;
 import com.hy.user.pb.UserInfo;
 import com.hy.user.pb.UserInfoRequest;
 import com.hy.user.pb.UserInfoResponse;
@@ -9,6 +10,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.HashMap;
 import java.util.Map;
 
+@GrpcService
 public class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
 
   private Map<String, UserInfo> users = new HashMap<>();
