@@ -19,7 +19,7 @@ public class GrpcLauncher {
     private Integer grpcServerPort;
 
     public void grpcStart(Map<String, Object> grpcServiceBeanMap) {
-        try{
+        try {
             ServerBuilder serverBuilder = ServerBuilder.forPort(grpcServerPort);
             for (Object bean : grpcServiceBeanMap.values()){
                 serverBuilder.addService((BindableService) bean);
