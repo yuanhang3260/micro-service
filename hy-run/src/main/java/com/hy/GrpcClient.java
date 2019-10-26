@@ -5,36 +5,42 @@ import com.hy.user.pb.UserInfoResponse;
 import com.hy.user.pb.UserServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import lombok.extern.slf4j.Slf4j;
-import sun.jvm.hotspot.HelloWorld;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.handler.codec.http2.Http2SecurityUtil;
+import io.netty.handler.ssl.*;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 public class GrpcClient {
 
     private static final String localHost = "127.0.0.1";
 
     public static void main(String[] args) {
-        int port = Integer.valueOf(args[0]);
-
+        String userName = args[0];
+        getUser(userName);
     }
 
-    public ManagedChannel getChannel(int port){
+    private static ManagedChannel getChannel(int port) throws Exception {
         return ManagedChannelBuilder.forAddress(localHost, port)
             .disableRetry()
             .idleTimeout(2, TimeUnit.SECONDS)
+            .usePlaintext()
             .build();
     }
 
-    public void getUser(int port, String username) {
-        ManagedChannel channel = getChannel(port);
-        UserInfoRequest userInfoRequest =
-            UserInfoRequest.newBuilder().setName("snoopy").build();
-        UserServiceGrpc.UserServiceBlockingStub stub =
-            UserServiceGrpc.newBlockingStub(channel);
-        UserInfoResponse userInfoResponse = stub.getUserByName(userInfoRequest);
-        log.(userInfoResponse.toString());
+    private static void getUser(String username) {
+        try {
+            ManagedChannel channel = getChannel(9092);
+            UserInfoRequest userInfoRequest =
+                UserInfoRequest.newBuilder().setName(username).build();
+            UserServiceGrpc.UserServiceBlockingStub stub =
+                UserServiceGrpc.newBlockingStub(channel);
+            UserInfoResponse userInfoResponse = stub.getUserByName(userInfoRequest);
+            System.out.println(userInfoResponse.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
