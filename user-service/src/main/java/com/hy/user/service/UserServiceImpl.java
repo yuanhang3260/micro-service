@@ -5,12 +5,10 @@ import com.hy.user.pb.UserInfoRequest;
 import com.hy.user.pb.UserInfoResponse;
 import com.hy.user.pb.UserServiceGrpc;
 import io.grpc.stub.StreamObserver;
-import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
 public class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
 
   private Map<String, UserInfo> users = new HashMap<>();
